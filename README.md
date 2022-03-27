@@ -1,4 +1,4 @@
-# Weather-App
+# Weather-Dashboard
 
 The weather dashboard allows the user to search for whatever city they desire by name. 
 It will return the current day forecast that includes information such as the temperature in degrees fahrenheit, humidity, wind speed, and the uv index. The UV index is color coded to show whether the UV index is considered low, medium, or high. This is indicated by the colors green for low, yellow for medium, and red for high.
