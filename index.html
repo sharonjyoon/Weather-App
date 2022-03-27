@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+
+  <style>
+    .green {
+      background-color: green;
+    }
+
+    .yellow {
+      background-color: yellow;
+    }
+
+    .red {
+      background-color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container is-fluid">
+    <div class="notification is-primary">
+      <h1 style="text-align: center; font-size: 40px;">Weather Dashboard</h1>
+      <div class="columns is-centered">
+        <div class="column is-one-third">
+          <input value="Newport Beach" id="cityName" class="input is-rounded" type="text" placeholder="City Name">
+          <div class="column is-4">
+            <a id="searchbtn" class="button">Search</a>
+          </div>
+          <div id="searchedCities"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div id="currentDiv"></div>
+      </div>
+      <div class="row">
+        <div id="fiveDay"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+
+    let mySearchedCity = JSON.parse(localStorage.getItem(`searchedCity`)) || []
+
+    mySearchedCity.forEach(city => {
+      document.getElementById(`searchedCities`).innerHTML += `
+      <p data-city="${city}" class="searchedCity"> ${city}</p>
+      `
+    })
+
+        document.getElementById(`searchbtn`).addEventListener(`click`, event => {
+          
+          let cityName = event.target.dataset.city
+          cityName = document.getElementById(`cityName`).value
+
+          let searchedCity = JSON.parse(localStorage.getItem('searchedCity')) || []
+
+          searchedCity.push(cityName);
+
+          localStorage.setItem('searchedCity', JSON.stringify(searchedCity))
+
+          console.log(cityName);
+          axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&units=imperial&appid=dc6fb6ca8790bb4e645d02cae66b76ad`)
+            .then(res => {
+              console.log(res.data);
+              let latitude = res.data.city.coord.lat;
+              let longitude = res.data.city.coord.lon;
+              let uvi
+              axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude={part}&appid=dc6fb6ca8790bb4e645d02cae66b76ad`)
+                .then(resp => {
+                  console.log(resp.data);
+                  if (resp.data.current.uvi < 2) {
+                    uvi = `green`
+                  } else if (resp.data.current.uvi < 5) {
+                    uvi = `yellow`
+                  } else {
+                    uvi = `red`
+                  }
+                  document.getElementById(`currentDiv`).innerHTML = `
+              <div class="columns is-centered">
+            <div class="column is-half">
+              <div class="card">
+            <div class="card-image">
+            <figure class="image is-4by3">
+          <img src="http://openweathermap.org/img/wn/${res.data.list[0].weather[0].icon}@4x.png">
+          </figure>
+          </div>
+          <div class="card-content">
+          <div class="media">
+          <div class="media-left">
+          <figure class="image is-48x48">
+          <img src="http://openweathermap.org/img/wn/${res.data.list[0].weather[0].icon}@2x.png" alt="Placeholder image">
+          </figure>
+          </div>
+          <div class="media-content">
+          <p class="title is-4">${res.data.city.name}</p>
+          <p class="subtitle is-6">${res.data.list[0].dt_txt}</p>
+          </div>
+          </div>
+          <div class="content">
+          <p>Temperature: ${res.data.list[0].main.temp}°F</p> 
+          <p>Humidity: ${res.data.list[0].main.humidity}</p>
+          <p>Wind Speed: ${res.data.list[0].wind.speed} mph</p>
+          <p id="uvindex" class="${uvi}">UV Index: ${resp.data.current.uvi}</p>
+          </div>
+          </div>`
+                  let weatherArray = [];
+                  let dayOne = {
+                    date: res.data.list[8].dt_txt,
+                    icon: res.data.list[8].weather[0].icon,
+                    temp: res.data.list[8].main.humidity,
+                    humidity: res.data.list[8].main.humidity
+                  }
+                  let dayTwo = {
+                    date: res.data.list[16].dt_txt,
+                    icon: res.data.list[16].weather[0].icon,
+                    temp: res.data.list[16].main.humidity,
+                    humidity: res.data.list[16].main.humidity
+                  }
+                  let dayThree = {
+                    date: res.data.list[24].dt_txt,
+                    icon: res.data.list[24].weather[0].icon,
+                    temp: res.data.list[24].main.humidity,
+                    humidity: res.data.list[24].main.humidity
+                  }
+                  let dayFour = {
+                    date: res.data.list[32].dt_txt,
+                    icon: res.data.list[32].weather[0].icon,
+                    temp: res.data.list[32].main.humidity,
+                    humidity: res.data.list[32].main.humidity
+                  }
+                  let dayFive = {
+                    date: res.data.list[39].dt_txt,
+                    icon: res.data.list[39].weather[0].icon,
+                    temp: res.data.list[39].main.humidity,
+                    humidity: res.data.list[39].main.humidity
+                  }
+                  weatherArray.push(dayOne, dayTwo, dayThree, dayFour, dayFive)
+
+                  weatherArray.forEach(day => {
+                    document.getElementById(`fiveDay`).innerHTML += `<div class="columns is-centered">
+            <div class="column is-half">
+              <div class="card">
+            <div class="card-image">
+            <figure class="image is-4by3">
+          <img src="http://openweathermap.org/img/wn/${day.icon}@4x.png">
+          </figure>
+          </div>
+          <div class="card-content">
+          <div class="media">
+          <div class="media-left">
+          </div>
+          <div class="media-content">
+          <p class="subtitle is-6">${day.date}</p>
+          </div>
+          </div>
+          <div class="content">
+          <p>Temperature: ${res.data.list[0].main.temp}°F</p> 
+          <p>Humidity: ${res.data.list[0].main.humidity}%</p>
+          </div>
+          </div>`
+                  })
+                })
+            })
+                let mySearchedCity = JSON.parse(localStorage.getItem(`searchedCity`)) || []
+          mySearchedCity.forEach(city => {
+            document.getElementById(`searchedCities`).innerHTML = `
+      `
+          })
+          mySearchedCity.forEach(city => {
+            document.getElementById(`searchedCities`).innerHTML += `
+      <p data-city="${city}" class="searchedCity"> ${city}</p>
+      `
+          })
+          })
+
+            document.addEventListener('click', event => {
+              if(event.target.classList.contains('searchedCity')){
+                let cityName = event.target.dataset.city
+ 
+            console.log(cityName);
+            axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&units=imperial&appid=dc6fb6ca8790bb4e645d02cae66b76ad`)
+              .then(res => {
+                console.log(res.data);
+                let latitude = res.data.city.coord.lat;
+                let longitude = res.data.city.coord.lon;
+                let uvi
+                axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude={part}&appid=dc6fb6ca8790bb4e645d02cae66b76ad`)
+                  .then(resp => {
+                    console.log(resp.data);
+                    if (resp.data.current.uvi < 2) {
+                      uvi = `green`
+                    } else if (resp.data.current.uvi < 5) {
+                      uvi = `yellow`
+                    } else {
+                      uvi = `red`
+                    }
+                    document.getElementById(`currentDiv`).innerHTML = `
+              <div class="columns is-centered">
+            <div class="column is-half">
+              <div class="card">
+            <div class="card-image">
+            <figure class="image is-4by3">
+          <img src="http://openweathermap.org/img/wn/${res.data.list[0].weather[0].icon}@4x.png">
+          </figure>
+          </div>
+          <div class="card-content">
+          <div class="media">
+          <div class="media-left">
+          <figure class="image is-48x48">
+          <img src="http://openweathermap.org/img/wn/${res.data.list[0].weather[0].icon}@2x.png" alt="Placeholder image">
+          </figure>
+          </div>
+          <div class="media-content">
+          <p class="title is-4">${res.data.city.name}</p>
+          <p class="subtitle is-6">${res.data.list[0].dt_txt}</p>
+          </div>
+          </div>
+          <div class="content">
+          <p>Temperature: ${res.data.list[0].main.temp}°F</p> 
+          <p>Humidity: ${res.data.list[0].main.humidity}</p>
+          <p>Wind Speed: ${res.data.list[0].wind.speed} mph</p>
+          <p id="uvindex" class="${uvi}">UV Index: ${resp.data.current.uvi}</p>
+          </div>
+          </div>`
+                    let weatherArray = [];
+                    let dayOne = {
+                      date: res.data.list[8].dt_txt,
+                      icon: res.data.list[8].weather[0].icon,
+                      temp: res.data.list[8].main.humidity,
+                      humidity: res.data.list[8].main.humidity
+                    }
+                    let dayTwo = {
+                      date: res.data.list[16].dt_txt,
+                      icon: res.data.list[16].weather[0].icon,
+                      temp: res.data.list[16].main.humidity,
+                      humidity: res.data.list[16].main.humidity
+                    }
+                    let dayThree = {
+                      date: res.data.list[24].dt_txt,
+                      icon: res.data.list[24].weather[0].icon,
+                      temp: res.data.list[24].main.humidity,
+                      humidity: res.data.list[24].main.humidity
+                    }
+                    let dayFour = {
+                      date: res.data.list[32].dt_txt,
+                      icon: res.data.list[32].weather[0].icon,
+                      temp: res.data.list[32].main.humidity,
+                      humidity: res.data.list[32].main.humidity
+                    }
+                    let dayFive = {
+                      date: res.data.list[39].dt_txt,
+                      icon: res.data.list[39].weather[0].icon,
+                      temp: res.data.list[39].main.humidity,
+                      humidity: res.data.list[39].main.humidity
+                    }
+                    weatherArray.push(dayOne, dayTwo, dayThree, dayFour, dayFive)
+
+                    weatherArray.forEach(day => {
+                      document.getElementById(`fiveDay`).innerHTML += `<div class="columns is-centered">
+            <div class="column is-half">
+              <div class="card">
+            <div class="card-image">
+            <figure class="image is-4by3">
+          <img src="http://openweathermap.org/img/wn/${day.icon}@4x.png">
+          </figure>
+          </div>
+          <div class="card-content">
+          <div class="media">
+          <div class="media-left">
+          </div>
+          <div class="media-content">
+          <p class="subtitle is-6">${day.date}</p>
+          </div>
+          </div>
+          <div class="content">
+          <p>Temperature: ${res.data.list[0].main.temp}°F</p> 
+          <p>Humidity: ${res.data.list[0].main.humidity}%</p>
+          </div>
+          </div>`
+                    })
+                  })
+                })
+            
+              }
+          });
+
+  </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.26.1/axios.min.js"></script>
+
+</body>
+</html>
